@@ -60,6 +60,12 @@ def main():
     st.title("☕ Cafe Marketing Dashboard")
     st.markdown(f"**Campaign Performance Overview**")
 
+    # Debug Section (Temporary)
+    # with st.expander("Debug Utils"):
+    #     st.write("Available Secret Keys:", list(st.secrets.keys()))
+    #     if "general" in st.secrets:
+    #          st.write("Keys in [general]:", list(st.secrets["general"].keys()))
+
     # Initialize API
     token = load_token()
     if not token:
@@ -146,8 +152,12 @@ def main():
         actions = insights.get('actions', [])
         landing_page_views = get_landing_page_views(actions)
         
+        # Fixed CPM Logic
+        FIXED_CPM = 125
+        budget_used = (impressions / 1000) * FIXED_CPM
+        
         with col1:
-            st.metric("Total Spent", f"₹{spend:,.2f}")
+            st.metric("Budget Used", f"₹{budget_used:,.2f}", help=f"Calculated based on fixed CPM of ₹{FIXED_CPM}")
         with col2:
             st.metric("People Reached", f"{reach:,}", help="Unique number of people who saw your ad.")
         with col3:
@@ -170,8 +180,11 @@ def main():
             # Extract Daily Landing Page Views
             df['landing_page_views'] = df['actions'].apply(lambda x: get_landing_page_views(x) if isinstance(x, list) else 0)
 
+            # Calculate Fixed CPM Daily Spend
+            df['budget_used'] = (df['impressions'] / 1000) * FIXED_CPM
+
             # Calculate Cumulative Growth
-            df['Cumulative Spend'] = df['spend'].cumsum()
+            df['Cumulative Spend'] = df['budget_used'].cumsum()
             df['Cumulative Reach'] = df['reach'].cumsum()
             df['Cumulative Impressions'] = df['impressions'].cumsum()
             df['Cumulative Interested Audience'] = df['landing_page_views'].cumsum()
@@ -206,8 +219,8 @@ def main():
                 
                 with col_c2:
                     # Daily Spend
-                    fig_daily_spend = px.bar(df, x='date_start', y='spend', 
-                                           title="Daily Spend (₹)",
+                    fig_daily_spend = px.bar(df, x='date_start', y='budget_used', 
+                                           title="Daily Budget Used (₹)",
                                            text_auto='.2s',
                                            color_discrete_sequence=['#FFB300'] # Amber/Gold
                                            )
