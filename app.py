@@ -228,10 +228,10 @@ def main():
                     # Daily Spend
                     fig_daily_spend = px.bar(df, x='date_start', y='budget_used', 
                                            title="Daily Budget Used (₹)",
-                                           text_auto='.2s',
+                                           text='budget_used',
                                            color_discrete_sequence=['#FFB300'] # Amber/Gold
                                            )
-                    fig_daily_spend.update_traces(textposition="outside", marker_line_width=0)
+                    fig_daily_spend.update_traces(texttemplate='%{text:.2f}', textposition="outside", marker_line_width=0)
                     fig_daily_spend.update_layout(hovermode="x unified", plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
                     st.plotly_chart(fig_daily_spend, use_container_width=True)
 
@@ -243,7 +243,7 @@ def main():
                                    color_discrete_sequence=['#FFB300', '#43A047', '#1E88E5', '#E53935'], # Amber, Green, Blue, Red
                                    markers=True,
                                    text='Total')
-                fig_growth.update_traces(line_shape='spline', textposition="top left", textfont_size=11)
+                fig_growth.update_traces(line_shape='spline', textposition="top left", textfont_size=11, texttemplate='%{text:.2s}')
                 fig_growth.update_layout(hovermode="x unified", plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)") # Transparent bg for theme adaptability
                 st.plotly_chart(fig_growth, use_container_width=True)
 
