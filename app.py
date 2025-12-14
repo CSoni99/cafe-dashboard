@@ -17,17 +17,23 @@ DEFAULT_CAMPAIGN_NAME_KEYWORD = "Sardi ki Chai"
 
 # Load helper functions for loading secrets safely
 def load_token():
+    # Try getting from nested [general] section (local toml)
+    if "general" in st.secrets and "FACEBOOK_ACCESS_TOKEN" in st.secrets["general"]:
+         return st.secrets["general"]["FACEBOOK_ACCESS_TOKEN"]
+    # Try getting from root level (Streamlit Cloud often flattens or if pasted without section)
+    elif "FACEBOOK_ACCESS_TOKEN" in st.secrets:
+         return st.secrets["FACEBOOK_ACCESS_TOKEN"]
+    
+    # Check manual local file fallback only if st.secrets failed to load anything relevant
+    # (Usually st.secrets handles local toml too, but keeping this just in case)
     try:
-        if "FACEBOOK_ACCESS_TOKEN" in st.secrets["general"]:
-             return st.secrets["general"]["FACEBOOK_ACCESS_TOKEN"]
-    except FileNotFoundError:
         secrets_path = ".streamlit/secrets.toml"
-        try:
-            with open(secrets_path, "r") as f:
-                config = toml.load(f)
-                return config.get("general", {}).get("FACEBOOK_ACCESS_TOKEN")
-        except:
-             return None
+        with open(secrets_path, "r") as f:
+            config = toml.load(f)
+            return config.get("general", {}).get("FACEBOOK_ACCESS_TOKEN")
+    except:
+         pass
+         
     return None
 
 # Simple CSS that adapts to theme
@@ -177,25 +183,36 @@ def main():
             tab1, tab2 = st.tabs(["Daily Activity", "Cumulative Growth"])
             
             with tab1:
+                # Combined Chart: Spend (Bar) vs Reach/Impressions (Line)
+                # To avoid stacking issues and improve density, we can use secondary y-axis
+                # BUT keeping it simple as per "non-tech client". 
+                # Let's clean up separate charts but make them look premium.
+                
                 col_c1, col_c2 = st.columns(2)
                 
                 with col_c1:
                     # Daily Reach & Impressions
                     chart_df = df.melt(id_vars=['date_start'], value_vars=['reach', 'impressions'], var_name='Metric', value_name='Count')
+                    # Improvised: Spline for smoothness, distinct colors
                     fig_daily_reach = px.line(chart_df, x='date_start', y='Count', color='Metric', 
                                             title="Daily Reach & Impressions",
                                             markers=True,
-                                            text='Count')
-                    fig_daily_reach.update_traces(textposition="top center")
+                                            text='Count',
+                                            color_discrete_map={'reach': '#2E7D32', 'impressions': '#1565C0'}, # Green & Blue
+                                            )
+                    fig_daily_reach.update_traces(line_shape='spline', textposition="top center", textfont_size=12)
+                    fig_daily_reach.update_layout(hovermode="x unified", bg_color="rgba(0,0,0,0)")
                     st.plotly_chart(fig_daily_reach, use_container_width=True)
                 
                 with col_c2:
                     # Daily Spend
                     fig_daily_spend = px.bar(df, x='date_start', y='spend', 
                                            title="Daily Spend (₹)",
-                                           color_discrete_sequence=['#ffca28'],
-                                           text_auto='.2s')
-                    fig_daily_spend.update_traces(textposition="outside")
+                                           text_auto='.2s',
+                                           color_discrete_sequence=['#FFB300'] # Amber/Gold
+                                           )
+                    fig_daily_spend.update_traces(textposition="outside", marker_line_width=0)
+                    fig_daily_spend.update_layout(hovermode="x unified", bg_color="rgba(0,0,0,0)")
                     st.plotly_chart(fig_daily_spend, use_container_width=True)
 
             with tab2:
@@ -203,10 +220,11 @@ def main():
                 growth_df = df.melt(id_vars=['date_start'], value_vars=['Cumulative Reach', 'Cumulative Impressions', 'Cumulative Interested Audience'], var_name='Metric', value_name='Total')
                 fig_growth = px.line(growth_df, x='date_start', y='Total', color='Metric', 
                                    title="Total Growth Over Time",
-                                   color_discrete_sequence=['#66bb6a', '#42a5f5', '#ef5350'],
+                                   color_discrete_sequence=['#43A047', '#1E88E5', '#E53935'], # Green, Blue, Red
                                    markers=True,
                                    text='Total')
-                fig_growth.update_traces(textposition="top left")
+                fig_growth.update_traces(line_shape='spline', textposition="top left", textfont_size=11)
+                fig_growth.update_layout(hovermode="x unified", bg_color="rgba(0,0,0,0)") # Transparent bg for theme adaptability
                 st.plotly_chart(fig_growth, use_container_width=True)
 
 
