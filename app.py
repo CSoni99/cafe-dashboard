@@ -159,10 +159,6 @@ def main():
         actions = insights.get('actions', [])
         landing_page_views = get_landing_page_views(actions)
         
-        # Actions logic for landing page views
-        actions = insights.get('actions', [])
-        landing_page_views = get_landing_page_views(actions)
-        
         # Budget Logic: Original Spend + Tax/Fee (Multiplier 1.08)
         BUDGET_MULTIPLIER = 1.08
         budget_used = spend * BUDGET_MULTIPLIER
@@ -195,7 +191,7 @@ def main():
             df['budget_used'] = df['spend'] * BUDGET_MULTIPLIER
 
             # Calculate Cumulative Growth
-            df['Cumulative Spend'] = df['budget_used'].cumsum()
+            df['Cumulative Budget Used'] = df['budget_used'].cumsum()
             df['Cumulative Reach'] = df['reach'].cumsum()
             df['Cumulative Impressions'] = df['impressions'].cumsum()
             df['Cumulative Interested Audience'] = df['landing_page_views'].cumsum()
@@ -241,10 +237,10 @@ def main():
 
             with tab2:
                 # Cumulative Growth
-                growth_df = df.melt(id_vars=['date_start'], value_vars=['Cumulative Reach', 'Cumulative Impressions', 'Cumulative Interested Audience'], var_name='Metric', value_name='Total')
+                growth_df = df.melt(id_vars=['date_start'], value_vars=['Cumulative Budget Used', 'Cumulative Reach', 'Cumulative Impressions', 'Cumulative Interested Audience'], var_name='Metric', value_name='Total')
                 fig_growth = px.line(growth_df, x='date_start', y='Total', color='Metric', 
                                    title="Total Growth Over Time",
-                                   color_discrete_sequence=['#43A047', '#1E88E5', '#E53935'], # Green, Blue, Red
+                                   color_discrete_sequence=['#FFB300', '#43A047', '#1E88E5', '#E53935'], # Amber, Green, Blue, Red
                                    markers=True,
                                    text='Total')
                 fig_growth.update_traces(line_shape='spline', textposition="top left", textfont_size=11)
