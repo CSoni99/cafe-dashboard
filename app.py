@@ -37,10 +37,7 @@ def load_token():
     except:
          pass
 
-    # 3. Hardcoded Fallback (For immediate reliable deployment)
-    # Note: In a strict production env, use secrets. For this client demo, this ensures it works.
-    FALLBACK_TOKEN = "EAAW55rZCivQMBQPRVss1hWki2H9eBE8x6QJx39Y2RSLiTpKmdhU6ecgnU52OuZCClO3gF3zgIevnQzcH1HtSW2oy6uU9pROyNvXTTmTrZBqymYRxgPCLjKbMVikgZBcsvSXovrme0g2R46m9ovFVzDS63oWuZBGUZCWBpk3Ol9ufo9L0OVaO06nWKwdF90qsIlQVhieESE"
-    return FALLBACK_TOKEN
+    return None
 
 # Simple CSS that adapts to theme
 st.markdown("""
@@ -69,7 +66,17 @@ def main():
     # Initialize API
     token = load_token()
     if not token:
-        st.error("API Token not found. Please configure secrets.")
+        st.error("⚠️ API Token not found.")
+        st.info("""
+        **To fix this on Streamlit Cloud:**
+        1. Go to **Settings** > **Secrets** for this app.
+        2. Paste the following:
+        ```
+        [general]
+        FACEBOOK_ACCESS_TOKEN = "your_token_here"
+        ```
+        3. Save and wait for the app to reload.
+        """)
         st.stop()
     
     if not init_api(token):
