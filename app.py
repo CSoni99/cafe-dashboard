@@ -159,12 +159,12 @@ def main():
         actions = insights.get('actions', [])
         landing_page_views = get_landing_page_views(actions)
         
-        # Budget Logic: Original Spend + Tax/Fee (Multiplier 1.08)
-        BUDGET_MULTIPLIER = 1.08
-        budget_used = spend * BUDGET_MULTIPLIER
+        # Budget Logic: Fixed 24 CPM based on Impressions
+        FIXED_CPM = 24
+        budget_used = (impressions / 1000) * FIXED_CPM
         
         with col1:
-            st.metric("Budget Used", f"₹{budget_used:,.2f}", help=f"Includes Service Fee/Tax multiplier of {BUDGET_MULTIPLIER}")
+            st.metric("Budget Used", f"₹{budget_used:,.2f}", help=f"Calculated as (Impressions / 1000) * {FIXED_CPM} CPM")
         with col2:
             st.metric("People Reached", f"{reach:,}", help="Unique number of people who saw your ad.")
         with col3:
@@ -187,8 +187,8 @@ def main():
             # Extract Daily Landing Page Views
             df['landing_page_views'] = df['actions'].apply(lambda x: get_landing_page_views(x) if isinstance(x, list) else 0)
 
-            # Calculate Daily Budget Used (Multiplier)
-            df['budget_used'] = df['spend'] * BUDGET_MULTIPLIER
+            # Calculate Daily Budget Used (Fixed 24 CPM)
+            df['budget_used'] = (df['impressions'] / 1000) * FIXED_CPM
 
             # Calculate Cumulative Growth
             df['Cumulative Budget Used'] = df['budget_used'].cumsum()
